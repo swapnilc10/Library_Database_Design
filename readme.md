@@ -1,0 +1,1 @@
+Some of the common snowflake methods that I will use in the application in the upcoming project
