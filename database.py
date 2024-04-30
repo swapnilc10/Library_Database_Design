@@ -1,6 +1,6 @@
 import snowflake.connector
 from snowflake.connector.pandas_tools import write_pandas
-import uuid
+import datetime
 
 
 class Connection:
@@ -81,24 +81,25 @@ class Connection:
         except Exception as e:
             print('Error:', e)
 
-    
-    def generate_uuid(self):
-        return str(uuid.uuid4())
 
-
-    def load_dataframe_in_table(self, dataframe , table_name : str, include_uuid=False):
-        if include_uuid:
-            dataframe['id'] = [self.generate_uuid() for _ in range(len(dataframe))]
-            #dataframe.apply(lambda row: self.generate_uuid(), axis=1)  # Add UUID column
-        write_pandas(dataframe, table_name, conn=self.conn)
-        self.conn.commit()
-        #dataframe.to_sql(table_name, con=self.conn, schema=self.schema, if_exists='replace', index=False)
+    def upload_csv_to_snowflake(self, dataframe, tablename):
+        try:
+            write_pandas(df= dataframe, table_name= tablename,conn=self.conn, auto_create_table= False)
+            self.conn.commit()
+            print("CSV file uploaded to Snowflake successfully.")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+        finally:
+            if self.cur:
+                self.cur.close()
+            if self.conn:
+                self.conn.close()
 
 
     def get_row_count(self, tablename : str):
         query = f"SELECT COUNT(*) FROM {tablename}"
         self.cur.execute(query)
-        return self.cur.fetchone()[0]
+        return self.cur.fetchone()[0] # type: ignore
 
 
     def create_backup_table(self, original_table : str, backup_table : str):
@@ -115,7 +116,34 @@ class Connection:
         self.cur.execute(f"TRUNCATE TABLE {original_table}")
 
         # Copy data from backup table back into original table
-        self.cur.execute(f"INSERT INTO {original_table} SELECT * FROM {backup_table}")    
+        self.cur.execute(f"INSERT INTO {original_table} SELECT * FROM {backup_table}")
+
+
+    def create_book_status_table(self):
+        try:
+            # Get today's date
+            today_date = datetime.date.today()
+
+            query_select = "SELECT BOOK_NAME, BOOK_QUANTITY, BOOK_ID FROM LIBRARY_BOOKS"
+
+            self.cur.execute(query_select)
+            records=self.cur.fetchall()
+
+            for record in records:
+                book_name, book_quantity, book_id = record
+
+                book_name = book_name.replace("'", "''")
+
+            # Insert a new record into the TRANSACTION_DETAILS table
+                query_insert = f"INSERT INTO BOOK_AVAILABILITY_STATUS (BOOK_ID, BOOK_NAME, TRANSACTION_DATE, QUANTITY_AVAILABLE) " \
+                           f"VALUES ('{book_id}', '{book_name}','{today_date}', {book_quantity})"
+
+                self.cur.execute(query_insert)
+            self.conn.commit()
+            print('Initial data replicated successfully.')
+        except Exception as e:
+            print('Error replicating initial data:', e)
+
 
     def close(self):
         self.cur.close()
