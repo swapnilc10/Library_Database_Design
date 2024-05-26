@@ -5,7 +5,7 @@ import datetime
 
 class Connection:
 
-    def __init__(self, user, password, account, database, schema):
+    def __init__(self, user: str, password: str, account: str, database: str, schema: str):
         self.user = user
         self.password = password
         self.account = account
@@ -82,7 +82,15 @@ class Connection:
             print('Error:', e)
 
 
-    def upload_csv_to_snowflake(self, dataframe, tablename):
+    def upload_csv_to_snowflake(self, dataframe, tablename: str):
+        """Method to upload csv file to a table
+        
+        Args:
+        dataframe : Name of the pandas dataframe that you want to add to snowflake
+        tablename (str) : Name of the table to which we want to add the dataframe. Table should be present in Snowflake,
+        no new table is going to be created
+        """
+
         try:
             write_pandas(df= dataframe, table_name= tablename,conn=self.conn, auto_create_table= False)
             self.conn.commit()
@@ -97,12 +105,21 @@ class Connection:
 
 
     def get_row_count(self, tablename : str):
+        """Method to get the total number of rows of the table
+        Args:
+        tablename (str) : Name of the table
+        """
         query = f"SELECT COUNT(*) FROM {tablename}"
         self.cur.execute(query)
         return self.cur.fetchone()[0] # type: ignore
 
 
     def create_backup_table(self, original_table : str, backup_table : str):
+        """Method to create the backup
+        Args:
+        original_table (str) : Name of the original table for which we want to create backup
+        backup_table (str) : Name of the backup table
+        """
         query = f"CREATE TABLE {backup_table} LIKE {original_table}"
         self.cur.execute(query)
 

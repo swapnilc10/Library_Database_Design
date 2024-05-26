@@ -7,24 +7,35 @@ class Library:
 
 
     def get_book_id_for_book_selection(self,bookname : str):
+        """Method to get the  full bookname and its corresponding book id for selecting the book from bookname
+        Args:
+        bookname (str) : Bookname or part of bookname to get the book id
+        """
         query_book="SELECT BOOK_NAME, BOOK_ID FROM BOOK_AVAILABILITY_STATUS WHERE QUANTITY_AVAILABLE>=1 AND BOOK_NAME LIKE '%{}%'".format(bookname)
         self.connection.cur.execute(query_book)
         return self.connection.cur.fetchall()
     
-
+    '''
     def get_book_name(self, book_id: str):
         query_book_name= f"SELECT BOOK_NAME FROM BOOK_AVAILABILITY_STATUS WHERE BOOK_ID ='{book_id}'"
         self.connection.cur.execute(query_book_name)
         return self.connection.cur.fetchone()
+    '''
     
 
-    def get_student_name(self,student_id: int):
-        query_student_name= f"SELECT FIRST_NAME, LAST_NAME FROM STUDENT WHERE STUDENT_ID ={student_id}"
+    def get_student_rollno(self,student_id: int):
+        """Method to get the roll no of the student from student id which is unique
+        Args :
+        student_id (int) : Id of the student for whom we want to get the roll no. Student Id is unique for each student
+        """
+        query_student_name= f"SELECT ROLL_NO FROM STUDENT WHERE STUDENT_ID ={student_id}"
         self.connection.cur.execute(query_student_name)
         return self.connection.cur.fetchone()
 
     
     def book_selection(self,book_id : str, student_id: int):
+        """Method to issue book to students and updating the Book_Availability_Status table with updated quantity of books
+        and also updating records in Student_Issued_books table. This table contains the records of the students who have issued the books"""
         try:
 
             today_date = datetime.today().date() #to get the date when student picked up the book
@@ -39,26 +50,20 @@ class Library:
             self.connection.conn.commit()
             print('Book picked up successfully')
 
-            student_name= self.get_student_name(student_id=student_id)
-            FIRST_NAME, LAST_NAME = student_name
+            student_rollno= self.get_student_rollno(student_id=student_id)
+            ROLL_NO = student_rollno
 
-            book_name= self.get_book_name(book_id=book_id)
-            book_name = book_name.replace("'", "''")
-            BOOK_NAME =book_name
             
-            self.student_issued_books(STUDENT_ID=student_id,FIRST_NAME=FIRST_NAME, LAST_NAME= LAST_NAME,BOOK_NAME= BOOK_NAME,BOOK_ID= book_id,ISSUANCE_DATE=formatted_today_date, RETURN_DATE= formatted_return_date)
+            self.student_issued_books(STUDENT_ID=student_id,BOOK_ID= book_id,ISSUANCE_DATE=formatted_today_date, RETURN_DATE= formatted_return_date)
         except Exception as e:
             print('Error updating book pickup', e)
 
 
-    def student_issued_books(self, STUDENT_ID: int, FIRST_NAME: str, LAST_NAME: str, BOOK_NAME: str, BOOK_ID: str, ISSUANCE_DATE, RETURN_DATE):
+    def student_issued_books(self, STUDENT_ID: int, BOOK_ID: str, ISSUANCE_DATE, RETURN_DATE):
         try:
         # Insert values into issued_books table
             self.connection.insert_value_in_table(tablename= 'STUDENT_ISSUED_BOOKS',
                                                STUDENT_ID= STUDENT_ID,
-                                               FIRST_NAME= FIRST_NAME,
-                                               LAST_NAME= LAST_NAME,
-                                               BOOK_NAME= BOOK_NAME,
                                                BOOK_ID= BOOK_ID,
                                                ISSUANCE_DATE= ISSUANCE_DATE,
                                                RETURN_DATE= RETURN_DATE)
@@ -68,6 +73,7 @@ class Library:
 
 
     def book_returned(self, book_id : str):
+        """Updating the Book_Availability_Status table quantity column once book is returned by student to library """
         try:
 
             today_date = datetime.today().date() #to get the date when student picked up the book
