@@ -2,7 +2,7 @@ In this project I have created a Library book management system
 
 Database.py 
 
-In this python file I have created a Snowflake python connection which we are going to use to connect to Snowflake
+In this python file I have created a Snowflake python connection which I am going to use to connect to Snowflake
 Some of the important methods are
 create_table method :- To create a new table in Snowflake
 insert_value_in_table :- To add values in the table
@@ -22,5 +22,7 @@ book_returned :- Updating the records once book is returned to library by studen
 student.py
 
 In this python file I have methods related to students 
-
-This file is still work in progress, and I will create more methods in it
+Some of the important methods are
+student_creation :- Creating new students in Student table
+get_all_student_issued_books :- Going to return records of all the students who have book issued to them currently
+book_extention :- This method will let librarian to extend book duration. Default value is 7 days
