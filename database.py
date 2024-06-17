@@ -5,24 +5,18 @@ import datetime
 
 class Connection:
 
+    
     def __init__(self, user: str, password: str, account: str, database: str, schema: str):
-        self.user = user
-        self.password = password
-        self.account = account
-        self.database = database
-        self.schema = schema
-        self.connect()  #Call the connect method to establish the connection
+    
 
-
-    def connect(self):
         try:
-            self.conn=snowflake.connector.connect(
-            user = self.user,
-            password = self.password ,
-            account = self.account,
-            database = self.database,
-            schema = self.schema
-        )
+            self.conn = snowflake.connector.connect(
+                user=user,
+                password=password,
+                account=account,
+                database=database,
+                schema=schema
+            )
             self.cur = self.conn.cursor()
             print('Connection is successful')
         except BaseException as e:
@@ -136,7 +130,7 @@ class Connection:
         self.cur.execute(f"INSERT INTO {original_table} SELECT * FROM {backup_table}")
 
 
-    def create_book_status_table(self):
+    def create_book_availability_status_table(self):
         try:
             # Get today's date
             today_date = datetime.date.today()

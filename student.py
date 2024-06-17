@@ -39,8 +39,12 @@ class Student:
                 days_late = (today_date - return_date).days
                 late_fees = days_late * 10  # Assuming $10 per day late fee
                 df.at[index, 'LATE_FEES_AMOUNT'] = late_fees
+                query_update_fees = f"UPDATE STUDENT_ISSUED_BOOKS SET LATE_FEES_AMOUNT = {late_fees} WHERE STUDENT_ID = {row['STUDENT_ID']} AND BOOK_ID = '{row['BOOK_ID']}'"
+                self.connection.cur.execute(query_update_fees)
             else:
                 df.at[index, 'LATE_FEES_AMOUNT'] = 0
+                query_update_fees = f"UPDATE STUDENT_ISSUED_BOOKS SET LATE_FEES_AMOUNT = 0 WHERE STUDENT_ID = {row['STUDENT_ID']} AND BOOK_ID = '{row['BOOK_ID']}'"
+                self.connection.cur.execute(query_update_fees)
         return df
     
   
