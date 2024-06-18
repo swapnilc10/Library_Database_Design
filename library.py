@@ -102,9 +102,9 @@ class Library:
 
             query_insert_returned = f"""
                     INSERT INTO BOOK_RETURN_HISTORY (
-                        STUDENT_ID, BOOK_ID, BOOK_RETURN_DATE, LATE_FEES_AMOUNT
+                        STUDENT_ID, BOOK_ID, BOOK_ISSUANCE_DATE, BOOK_RETURN_DATE, LATE_FEES_AMOUNT
                     ) 
-                    VALUES ({student_id},'{book_id}','{formatted_today_date}',{calculated_late_fees}
+                    VALUES ({student_id},'{book_id}', '{issuance_date}','{formatted_today_date}',{calculated_late_fees}
                     )
                 """
             self.connection.cur.execute(query_insert_returned)
